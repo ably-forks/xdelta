@@ -3,6 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 bin_PROGRAMS = xdelta3
 noinst_PROGRAMS = xdelta3regtest xdelta3decode xdelta3checksum
+noinst_LIBRARIES = libxdelta3.a
 
 export AFL_HARDEN
 
@@ -23,6 +24,8 @@ common_SOURCES = \
 	  xdelta3.h
 
 xdelta3_SOURCES = $(common_SOURCES) xdelta3.c
+
+libxdelta3_a_SOURCES = $(common_SOURCES) xdelta3.c
 
 xdelta3decode_SOURCES = $(common_SOURCES) xdelta3.c
 
@@ -102,6 +105,19 @@ xdelta3decode_CFLAGS = \
 	-DXD3_MAIN=1 \
 	-DXD3_ENCODER=0 \
 	-DXD3_STDIO=1 \
+	-DEXTERNAL_COMPRESSION=0 \
+	-DVCDIFF_TOOLS=0
+
+libxdelta3_a_CFLAGS = \
+	$(C_WFLAGS) \
+	-fPIC \
+	-DREGRESSION_TEST=0 \
+	-DSECONDARY_DJW=0 \
+	-DSECONDARY_FGK=0 \
+	-DSECONDARY_LZMA=0 \
+	-DXD3_MAIN=0 \
+	-DXD3_ENCODER=1 \
+	-DXD3_STDIO=0 \
 	-DEXTERNAL_COMPRESSION=0 \
 	-DVCDIFF_TOOLS=0
 
