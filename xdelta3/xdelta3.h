@@ -1105,6 +1105,10 @@ struct _xd3_stream
  PUBLIC FUNCTIONS
  **************************************************************************/
 
+#ifdef __cplusplus
+  extern "C" {
+#endif
+
 /* This function configures an xd3_stream using the provided in-memory
  * input buffer, source buffer, output buffer, and flags.  The output
  * array must be large enough or else ENOSPC will be returned.  This
@@ -1128,6 +1132,9 @@ int     xd3_decode_memory (const uint8_t *input,
 			   usize_t        avail_output,
 			   int            flags);
 
+#ifdef __cplusplus
+  }
+#endif
 /* This function encodes an in-memory input using a pre-configured
  * xd3_stream.  This allows the caller to set a variety of options
  * which are not available in the xd3_encode/decode_memory()
@@ -1313,9 +1320,17 @@ int xd3_found_match (xd3_stream *stream,
 		     usize_t pos, usize_t size,
 		     xoff_t addr, int is_source);
 
+#ifdef __cplusplus
+  extern "C" {
+#endif
+
 /* Gives an error string for xdelta3-speficic errors, returns NULL for
    system errors */
 const char* xd3_strerror (int ret);
+
+#ifdef __cplusplus
+  }
+#endif
 
 /* For convenience, zero & initialize the xd3_config structure with
    specified flags. */
