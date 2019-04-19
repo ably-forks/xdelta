@@ -447,7 +447,8 @@ typedef enum {
   XD3_INVALID_INPUT = -17712, /* invalid input/decoder error */
   XD3_NOSECOND    = -17713, /* when secondary compression finds no
 			       improvement. */
-  XD3_UNIMPLEMENTED = -17714  /* currently VCD_TARGET, VCD_CODETABLE */
+  XD3_UNIMPLEMENTED = -17714,  /* currently VCD_TARGET, VCD_CODETABLE */
+  XD3_CANCELLED = -17715  /*cancellation request granted*/
 } xd3_rvalues;
 
 /* special values in config->flags */
@@ -718,7 +719,7 @@ struct _xd3_iopt_buflist
 struct _xd3_smatcher
 {
   const char        *name;
-  int             (*string_match) (xd3_stream  *stream);
+  int             (*string_match) (xd3_stream  *stream, uint8_t *cancellationRequested);
   usize_t            large_look;
   usize_t            large_step;
   usize_t            small_look;
@@ -1120,7 +1121,8 @@ int     xd3_encode_memory (const uint8_t *input,
 			   uint8_t       *output_buffer,
 			   usize_t       *output_size,
 			   usize_t        avail_output,
-			   int            flags);
+			   int            flags,
+			   uint8_t       *cancellationRequested);
 
 /* The reverse of xd3_encode_memory. */
 int     xd3_decode_memory (const uint8_t *input,
@@ -1237,8 +1239,8 @@ int     xd3_decode_stream (xd3_stream    *stream,
  *   XD3_GETSRCBLK: If the xd3_getblk() callback is NULL, this value
  *               is returned to initiate a non-blocking source read.
  */
-int     xd3_decode_input  (xd3_stream    *stream);
-int     xd3_encode_input  (xd3_stream    *stream);
+int     xd3_decode_input  (xd3_stream    *stream, uint8_t *cancellationRequested);
+int     xd3_encode_input  (xd3_stream    *stream, uint8_t *cancellationRequested);
 
 /* The xd3_config structure is used to initialize a stream - all data
  * is copied into stream so config may be a temporary variable.  See

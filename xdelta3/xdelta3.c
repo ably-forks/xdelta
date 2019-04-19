@@ -536,6 +536,7 @@ const char* xd3_strerror (int ret)
     case XD3_INVALID_INPUT: return "XD3_INVALID_INPUT";
     case XD3_NOSECOND: return "XD3_NOSECOND";
     case XD3_UNIMPLEMENTED: return "XD3_UNIMPLEMENTED";
+    case XD3_CANCELLED: return "XD3_CANCELLED";
     }
   return NULL;
 }
@@ -3071,7 +3072,7 @@ xd3_encode_reset (xd3_stream *stream)
 
 /* The main encoding routine. */
 int
-xd3_encode_input (xd3_stream *stream)
+xd3_encode_input (xd3_stream *stream, uint8_t *cancellationRequested)
 {
   int ret, i;
 
@@ -3193,7 +3194,7 @@ xd3_encode_input (xd3_stream *stream)
 
       /* String matching... */
       if (stream->avail_in != 0 &&
-	  (ret = stream->smatcher.string_match (stream)))
+	  (ret = stream->smatcher.string_match (stream, cancellationRequested)))
 	{
 	  return ret;
 	}
@@ -3302,13 +3303,14 @@ xd3_encode_input (xd3_stream *stream)
 int
 xd3_process_stream (int            is_encode,
 		    xd3_stream    *stream,
-		    int          (*func) (xd3_stream *),
+		    int          (*func) (xd3_stream *, uint8_t *),
 		    int            close_stream,
 		    const uint8_t *input,
 		    usize_t        input_size,
 		    uint8_t       *output,
 		    usize_t       *output_size,
-		    usize_t        output_size_max)
+		    usize_t        output_size_max,
+		    uint8_t       *cancellationRequested)
 {
   usize_t ipos = 0;
   usize_t n = xd3_min (stream->winsize, input_size);
@@ -3323,7 +3325,7 @@ xd3_process_stream (int            is_encode,
   for (;;)
     {
       int ret;
-      switch ((ret = func (stream)))
+      switch ((ret = func (stream, cancellationRequested)))
 	{
 	case XD3_OUTPUT: { /* memcpy below */ break; }
 	case XD3_INPUT: {
@@ -3384,7 +3386,8 @@ xd3_process_memory (int            is_encode,
 		    uint8_t       *output,
 		    usize_t       *output_size,
 		    usize_t        output_size_max,
-		    int            flags) {
+		    int            flags,
+		    uint8_t       *cancellationRequested) {
   xd3_stream stream;
   xd3_config config;
   xd3_source src;
@@ -3434,7 +3437,8 @@ xd3_process_memory (int            is_encode,
 				 input, input_size,
 				 output,
 				 output_size,
-				 output_size_max)) != 0)
+				 output_size_max,
+				 cancellationRequested)) != 0)
     {
       goto exit;
     }
@@ -3456,9 +3460,11 @@ xd3_decode_stream (xd3_stream    *stream,
 		   usize_t       *output_size,
 		   usize_t        output_size_max)
 {
+  uint8_t cancellationRequested = 0;
   return xd3_process_stream (0, stream, & xd3_decode_input, 1,
 			     input, input_size,
-			     output, output_size, output_size_max);
+			     output, output_size, output_size_max,
+			     &cancellationRequested);
 }
 
 int
@@ -3470,11 +3476,12 @@ xd3_decode_memory (const uint8_t *input,
 		   usize_t       *output_size,
 		   usize_t        output_size_max,
 		   int            flags) {
+  uint8_t cancellationRequested = 0;
   return xd3_process_memory (0, & xd3_decode_input,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,
-			     flags);
+			     flags, &cancellationRequested);
 }
 
 
@@ -3487,9 +3494,11 @@ xd3_encode_stream (xd3_stream    *stream,
 		   usize_t        *output_size,
 		   usize_t         output_size_max)
 {
+  uint8_t cancellationRequested = 0;
   return xd3_process_stream (1, stream, & xd3_encode_input, 1,
 			     input, input_size,
-			     output, output_size, output_size_max);
+			     output, output_size, output_size_max,
+			     &cancellationRequested);
 }
 
 int
@@ -3500,12 +3509,13 @@ xd3_encode_memory (const uint8_t *input,
 		   uint8_t       *output,
 		   usize_t        *output_size,
 		   usize_t        output_size_max,
-		   int            flags) {
+		   int            flags,
+		   uint8_t       *cancellationRequested) {
   return xd3_process_memory (1, & xd3_encode_input,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,
-			     flags);
+			     flags, cancellationRequested);
 }
 #endif
 
@@ -4535,7 +4545,7 @@ xd3_srcwin_move_point (xd3_stream *stream, usize_t *next_move_point)
 #define XD3_STRINGIFY(x)     XD3_STRINGIFY2(x)
 #define XD3_STRINGIFY2(x)    #x
 
-static int XD3_TEMPLATE(xd3_string_match_) (xd3_stream *stream);
+static int XD3_TEMPLATE(xd3_string_match_) (xd3_stream *stream, uint8_t *cancellationRequested);
 
 static const xd3_smatcher XD3_TEMPLATE(__smatcher_) =
 {
@@ -4549,7 +4559,7 @@ static const xd3_smatcher XD3_TEMPLATE(__smatcher_) =
 };
 
 static int
-XD3_TEMPLATE(xd3_string_match_) (xd3_stream *stream)
+XD3_TEMPLATE(xd3_string_match_) (xd3_stream *stream, uint8_t *cancellationRequested)
 {
   const int      DO_SMALL = ! (stream->flags & XD3_NOCOMPRESS);
   const int      DO_LARGE = (stream->src != NULL);
@@ -4657,6 +4667,9 @@ XD3_TEMPLATE(xd3_string_match_) (xd3_stream *stream)
   /* Now loop over one input byte at a time until a match is found... */
   for (;; inp += 1, stream->input_position += 1)
     {
+      if (*cancellationRequested != 0) {
+        return XD3_CANCELLED;
+      }
       /* Now we try three kinds of string match in order of expense:
        * run, large match, small match. */
 

@@ -809,7 +809,7 @@ xd3_decode_emit (xd3_stream *stream)
 }
 
 int
-xd3_decode_input (xd3_stream *stream)
+xd3_decode_input (xd3_stream *stream, uint8_t *cancellationRequested)
 {
   int ret;
 

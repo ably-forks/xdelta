@@ -67,13 +67,14 @@ usize_t xd3_pow2_roundup (usize_t x);
 long get_millisecs_now (void);
 int xd3_process_stream (int            is_encode,
 			xd3_stream    *stream,
-			int          (*func) (xd3_stream *),
+			int          (*func) (xd3_stream *, uint8_t *),
 			int            close_stream,
 			const uint8_t *input,
 			usize_t        input_size,
 			uint8_t       *output,
 			usize_t       *output_size,
-			usize_t        output_size_max);
+			usize_t        output_size_max,
+			uint8_t       *cancellationRequested);
 
 #if PYTHON_MODULE || SWIG_MODULE || NOT_MAIN
 int xd3_main_cmdline (int argc, char **argv);
