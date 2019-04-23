@@ -1121,8 +1121,18 @@ int     xd3_encode_memory (const uint8_t *input,
 			   uint8_t       *output_buffer,
 			   usize_t       *output_size,
 			   usize_t        avail_output,
+			   int            flags);
+
+int     xd3_encode_memory_enhanced (const uint8_t *input,
+			   usize_t        input_size,
+			   const uint8_t *source,
+			   usize_t        source_size,
+			   uint8_t       *output_buffer,
+			   usize_t       *output_size,
+			   usize_t        avail_output,
 			   int            flags,
-			   uint8_t       *cancellationRequested);
+			   uint8_t       *cancellationRequested,
+         xd3_smatch_cfg stringMatcher);
 
 /* The reverse of xd3_encode_memory. */
 int     xd3_decode_memory (const uint8_t *input,

@@ -3377,7 +3377,7 @@ xd3_process_stream (int            is_encode,
 }
 
 static int
-xd3_process_memory (int            is_encode,
+xd3_process_memory_enhanced (int            is_encode,
 		    int          (*func) (xd3_stream *),
 		    const uint8_t *input,
 		    usize_t        input_size,
@@ -3387,7 +3387,8 @@ xd3_process_memory (int            is_encode,
 		    usize_t       *output_size,
 		    usize_t        output_size_max,
 		    int            flags,
-		    uint8_t       *cancellationRequested) {
+		    uint8_t       *cancellationRequested,
+        xd3_smatch_cfg stringMatcher) {
   xd3_stream stream;
   xd3_config config;
   xd3_source src;
@@ -3395,6 +3396,8 @@ xd3_process_memory (int            is_encode,
 
   memset (& stream, 0, sizeof (stream));
   memset (& config, 0, sizeof (config));
+
+  config.smatch_cfg = stringMatcher;
 
   if (input == NULL || output == NULL) {
     stream.msg = "invalid input/output buffer";
@@ -3452,6 +3455,32 @@ xd3_process_memory (int            is_encode,
   return ret;
 }
 
+static int
+xd3_process_memory (int            is_encode,
+		    int          (*func) (xd3_stream *),
+		    const uint8_t *input,
+		    usize_t        input_size,
+		    const uint8_t *source,
+		    usize_t        source_size,
+		    uint8_t       *output,
+		    usize_t       *output_size,
+		    usize_t        output_size_max,
+		    int            flags) 
+{
+  return xd3_process_memory_enhanced (is_encode,
+		    func,
+		    input,
+		    input_size,
+		    source,
+		    source_size,
+		    output,
+		    output_size,
+		    output_size_max,
+		    flags,
+        0,
+        0);
+}
+
 int
 xd3_decode_stream (xd3_stream    *stream,
 		   const uint8_t *input,
@@ -3476,12 +3505,11 @@ xd3_decode_memory (const uint8_t *input,
 		   usize_t       *output_size,
 		   usize_t        output_size_max,
 		   int            flags) {
-  uint8_t cancellationRequested = 0;
   return xd3_process_memory (0, & xd3_decode_input,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,
-			     flags, &cancellationRequested);
+			     flags);
 }
 
 
@@ -3509,13 +3537,30 @@ xd3_encode_memory (const uint8_t *input,
 		   uint8_t       *output,
 		   usize_t        *output_size,
 		   usize_t        output_size_max,
-		   int            flags,
-		   uint8_t       *cancellationRequested) {
+		   int            flags) {
   return xd3_process_memory (1, & xd3_encode_input,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,
-			     flags, cancellationRequested);
+			     flags);
+}
+
+int
+xd3_encode_memory_enhanced (const uint8_t *input,
+		   usize_t        input_size,
+		   const uint8_t *source,
+		   usize_t        source_size,
+		   uint8_t       *output,
+		   usize_t        *output_size,
+		   usize_t        output_size_max,
+		   int            flags,
+		   uint8_t       *cancellationRequested,
+       xd3_smatch_cfg stringMatcher) {
+  return xd3_process_memory_enhanced (1, & xd3_encode_input,
+			     input, input_size,
+			     source, source_size,
+			     output, output_size, output_size_max,
+			     flags, cancellationRequested, stringMatcher);
 }
 #endif
 
