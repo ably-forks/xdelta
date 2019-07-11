@@ -1,2 +1,5 @@
 language: c
-script: ./xdelta3/buildXDelta.sh
+script: 
+  - ./xdelta3/buildXDelta.sh # build as static library
+  - cd xdelta3 && autoreconf --install &&  ./configure --disable-dependency-tracking && make # build as executable
+compiler: gcc
