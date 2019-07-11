@@ -65,7 +65,7 @@ xd3_output* xd3_alloc_output (xd3_stream *stream,
 int xd3_encode_init_full (xd3_stream *stream);
 usize_t xd3_pow2_roundup (usize_t x);
 long get_millisecs_now (void);
-int xd3_process_stream (int            is_encode,
+int xd3_process_stream_cancelable (int            is_encode,
 			xd3_stream    *stream,
 			int          (*func) (xd3_stream *, uint8_t *),
 			int            close_stream,
@@ -75,6 +75,16 @@ int xd3_process_stream (int            is_encode,
 			usize_t       *output_size,
 			usize_t        output_size_max,
 			uint8_t       *cancellationRequested);
+
+int xd3_process_stream (int            is_encode,
+			xd3_stream    *stream,
+			int          (*func) (xd3_stream *),
+			int            close_stream,
+			const uint8_t *input,
+			usize_t        input_size,
+			uint8_t       *output,
+			usize_t       *output_size,
+			usize_t        output_size_max);
 
 #if PYTHON_MODULE || SWIG_MODULE || NOT_MAIN
 int xd3_main_cmdline (int argc, char **argv);

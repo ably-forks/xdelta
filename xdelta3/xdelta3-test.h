@@ -2746,7 +2746,8 @@ test_string_matching (xd3_stream *stream, int ignore)
 
       xd3_avail_input (stream, (uint8_t*)test->input, len);
 
-      if ((ret = stream->smatcher.string_match (stream))) { return ret; }
+      uint8_t cancellationToken = 0;
+      if ((ret = stream->smatcher.string_match (stream, &cancellationToken))) { return ret; }
 
       *rptr = 0;
       while (! xd3_rlist_empty (& stream->iopt_used))

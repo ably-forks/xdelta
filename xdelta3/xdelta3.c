@@ -3072,7 +3072,16 @@ xd3_encode_reset (xd3_stream *stream)
 
 /* The main encoding routine. */
 int
-xd3_encode_input (xd3_stream *stream, uint8_t *cancellationRequested)
+xd3_encode_input (xd3_stream *stream)
+{
+  uint8_t cancellationToken = 0;
+  return xd3_encode_input_cancelable (stream, &cancellationToken);
+}
+
+
+/* The main encoding routine. */
+int
+xd3_encode_input_cancelable (xd3_stream *stream, uint8_t *cancellationRequested)
 {
   int ret, i;
 
@@ -3303,6 +3312,85 @@ xd3_encode_input (xd3_stream *stream, uint8_t *cancellationRequested)
 int
 xd3_process_stream (int            is_encode,
 		    xd3_stream    *stream,
+		    int          (*func) (xd3_stream *),
+		    int            close_stream,
+		    const uint8_t *input,
+		    usize_t        input_size,
+		    uint8_t       *output,
+		    usize_t       *output_size,
+		    usize_t        output_size_max)
+{
+  //TODO: This is 99% copy-paste of xd3_process_stream the only difference being `func` call.
+  // The `func` call can be factored out and teh copy-paste code could be unified to a single
+  // copy. 
+
+  usize_t ipos = 0;
+  usize_t n = xd3_min (stream->winsize, input_size);
+
+  (*output_size) = 0;
+
+  stream->flags |= XD3_FLUSH;
+
+  xd3_avail_input (stream, input + ipos, n);
+  ipos += n;
+
+  for (;;)
+    {
+      int ret;
+      switch ((ret = func (stream)))
+	{
+	case XD3_OUTPUT: { /* memcpy below */ break; }
+	case XD3_INPUT: {
+	  n = xd3_min(stream->winsize, input_size - ipos);
+	  if (n == 0) 
+	    {
+	      goto done;
+	    }
+	  xd3_avail_input (stream, input + ipos, n);
+	  ipos += n;
+	  continue;
+	}
+	case XD3_GOTHEADER: { /* ignore */ continue; }
+	case XD3_WINSTART: { /* ignore */ continue; }
+	case XD3_WINFINISH: { /* ignore */ continue; }
+	case XD3_GETSRCBLK:
+	  {
+	    /* When the getblk function is NULL, it is necessary to
+	     * provide the complete source as a single block using
+	     * xd3_set_source_and_size, otherwise this error.  The
+	     * library should never ask for another source block. */
+	    stream->msg = "library requested source block";
+	    return XD3_INTERNAL;
+	  }
+	case 0:
+	  {
+	    /* xd3_encode_input/xd3_decode_input never return 0 */
+	    stream->msg = "invalid return: 0";
+	    return XD3_INTERNAL;
+	  }
+	default:
+	  return ret;
+	}
+
+      if (*output_size + stream->avail_out > output_size_max)
+	{
+	  stream->msg = "insufficient output space";
+	  return ENOSPC;
+	}
+
+      memcpy (output + *output_size, stream->next_out, stream->avail_out);
+
+      *output_size += stream->avail_out;
+
+      xd3_consume_output (stream);
+    }
+ done:
+  return (close_stream == 0) ? 0 : xd3_close_stream (stream);
+}
+
+int
+xd3_process_stream_cancelable (int            is_encode,
+		    xd3_stream    *stream,
 		    int          (*func) (xd3_stream *, uint8_t *),
 		    int            close_stream,
 		    const uint8_t *input,
@@ -3434,7 +3522,7 @@ xd3_process_memory_enhanced (int            is_encode,
 	}
     }
 
-  if ((ret = xd3_process_stream (is_encode,
+  if ((ret = xd3_process_stream_cancelable (is_encode,
 				 & stream,
 				 func, 1,
 				 input, input_size,
@@ -3489,11 +3577,9 @@ xd3_decode_stream (xd3_stream    *stream,
 		   usize_t       *output_size,
 		   usize_t        output_size_max)
 {
-  uint8_t cancellationRequested = 0;
   return xd3_process_stream (0, stream, & xd3_decode_input, 1,
 			     input, input_size,
-			     output, output_size, output_size_max,
-			     &cancellationRequested);
+			     output, output_size, output_size_max);
 }
 
 int
@@ -3522,11 +3608,9 @@ xd3_encode_stream (xd3_stream    *stream,
 		   usize_t        *output_size,
 		   usize_t         output_size_max)
 {
-  uint8_t cancellationRequested = 0;
   return xd3_process_stream (1, stream, & xd3_encode_input, 1,
 			     input, input_size,
-			     output, output_size, output_size_max,
-			     &cancellationRequested);
+			     output, output_size, output_size_max);
 }
 
 int

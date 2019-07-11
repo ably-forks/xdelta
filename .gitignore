@@ -30,3 +30,4 @@ stamp-h1
 xdelta3/xdelta3
 xdelta3decode
 xdelta3regtest
+xdelta3/libxdelta3.a

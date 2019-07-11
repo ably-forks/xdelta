@@ -1249,8 +1249,10 @@ int     xd3_decode_stream (xd3_stream    *stream,
  *   XD3_GETSRCBLK: If the xd3_getblk() callback is NULL, this value
  *               is returned to initiate a non-blocking source read.
  */
-int     xd3_decode_input  (xd3_stream    *stream, uint8_t *cancellationRequested);
-int     xd3_encode_input  (xd3_stream    *stream, uint8_t *cancellationRequested);
+int     xd3_decode_input_cancelable  (xd3_stream    *stream, uint8_t *cancellationRequested);
+int     xd3_encode_input_cancelable  (xd3_stream    *stream, uint8_t *cancellationRequested);
+int     xd3_encode_input  (xd3_stream    *stream);
+int     xd3_decode_input  (xd3_stream    *stream);
 
 /* The xd3_config structure is used to initialize a stream - all data
  * is copied into stream so config may be a temporary variable.  See
