@@ -1,0 +1,3 @@
+language: c
+script: ./xdelta3/buildXDelta.sh
+compiler: gcc
