@@ -6,5 +6,6 @@ before_script: cd xdelta3
 script:  
   - ./buildXDelta.sh # build as static library
   - make clean # cleanup static library build artifacts
-  - autoreconf --install &&  ./configure --disable-dependency-tracking && make # build as executable
+  - autoreconf --install && ./configure --disable-dependency-tracking && make # build as executable
+  - ./xdelta3regtest # run tests
 compiler: gcc
