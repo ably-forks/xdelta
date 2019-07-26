@@ -3640,7 +3640,7 @@ xd3_encode_memory_enhanced (const uint8_t *input,
 		   int            flags,
 		   uint8_t       *cancellationRequested,
        xd3_smatch_cfg stringMatcher) {
-  return xd3_process_memory_enhanced (1, & xd3_encode_input,
+  return xd3_process_memory_enhanced (1, & xd3_encode_input_cancelable,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,
