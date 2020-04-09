@@ -1089,7 +1089,7 @@ static uint32_t adler32 (uint32_t adler, const uint8_t *buf, usize_t len)
 {
     uint32_t s1 = adler & 0xffffU;
     uint32_t s2 = (adler >> 16) & 0xffffU;
-    int k;
+    usize_t k;
 
     while (len > 0)
       {
@@ -3466,7 +3466,7 @@ xd3_process_stream_cancelable (int            is_encode,
 
 static int
 xd3_process_memory_enhanced (int            is_encode,
-		    int          (*func) (xd3_stream *),
+		    int          (*func) (xd3_stream *, uint8_t *),
 		    const uint8_t *input,
 		    usize_t        input_size,
 		    const uint8_t *source,
@@ -3545,7 +3545,7 @@ xd3_process_memory_enhanced (int            is_encode,
 
 static int
 xd3_process_memory (int            is_encode,
-		    int          (*func) (xd3_stream *),
+		    int          (*func) (xd3_stream *, uint8_t *),
 		    const uint8_t *input,
 		    usize_t        input_size,
 		    const uint8_t *source,
@@ -3591,7 +3591,7 @@ xd3_decode_memory (const uint8_t *input,
 		   usize_t       *output_size,
 		   usize_t        output_size_max,
 		   int            flags) {
-  return xd3_process_memory (0, & xd3_decode_input,
+  return xd3_process_memory (0, (int (*)(xd3_stream *, uint8_t *))& xd3_decode_input,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,
@@ -3622,7 +3622,7 @@ xd3_encode_memory (const uint8_t *input,
 		   usize_t        *output_size,
 		   usize_t        output_size_max,
 		   int            flags) {
-  return xd3_process_memory (1, & xd3_encode_input,
+  return xd3_process_memory (1, (int (*)(xd3_stream *, uint8_t *))& xd3_encode_input,
 			     input, input_size,
 			     source, source_size,
 			     output, output_size, output_size_max,

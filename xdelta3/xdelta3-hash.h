@@ -150,7 +150,7 @@ xd3_size_hashtable (xd3_stream   *stream,
     }
 
   cfg->powers[look-1] = 1;
-  for (int i = look-2; i >= 0; i--)
+  for (int i = (int)look-2; i >= 0; i--)
     {
       cfg->powers[i] = cfg->powers[i+1] * xd3_hash_multiplier;
     }
