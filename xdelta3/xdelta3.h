@@ -28,7 +28,7 @@
 #define _ISOC99_SOURCE
 #define _C99_SOURCE
 
-#if HAVE_CONFIG_H
+#if HAVE_DELTA_CONFIG_H
 #include "config.h"
 #endif
 
