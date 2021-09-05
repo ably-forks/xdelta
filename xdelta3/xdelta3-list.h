@@ -111,20 +111,6 @@ LTYPE ## _next (ETYPE *f)                                               \
   return LTYPE ## _entry (f->LNAME.next);                               \
 }                                                                       \
                                                                         \
-static inline usize_t                                                   \
-LTYPE ## _length (LTYPE *l)                                             \
-{                                                                       \
-  LTYPE *p;                                                             \
-  usize_t c = 0;                                                        \
-                                                                        \
-  for (p = l->next; p != l; p = p->next)                                \
-    {                                                                   \
-      c += 1;                                                           \
-    }                                                                   \
-                                                                        \
-  return c;                                                             \
-}                                                                       \
-                                                                        \
 typedef int unused_ ## LTYPE
 
 #endif

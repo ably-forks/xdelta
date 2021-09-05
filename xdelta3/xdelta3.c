@@ -476,8 +476,6 @@ static int         xd3_source_match_setup (xd3_stream *stream, xoff_t srcpos);
 static int         xd3_source_extend_match (xd3_stream *stream);
 static int         xd3_srcwin_setup (xd3_stream *stream);
 static usize_t     xd3_iopt_last_matched (xd3_stream *stream);
-static int         xd3_emit_uint32_t (xd3_stream *stream, xd3_output **output,
-				      uint32_t num);
 
 static usize_t xd3_smatch (xd3_stream *stream,
 			   usize_t base,
