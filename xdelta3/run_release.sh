@@ -5,7 +5,7 @@ SRCDIR=${PWD}
 
 # TODO replace w/ wget
 LZMA="xz-5.2.1"
-LZMA_FILE="${SRCDIR}/../${LZMA}.tar.xz"
+LZMA_FILE="${SRCDIR}/../${LZMA}.tar.gz"
 
 MAKEFLAGS="-j 10"
 
@@ -40,15 +40,22 @@ if [ "${TMPDIR}" != "" ]; then
     XTMP="${TMPDIR}"
 fi
 
-find build -type f 2> /dev/null | xargs rm -f
+BUILDFILES=`ls -A ${BUILDDIR} 2> /dev/null`
+if [ -d "${BUILDDIR}" ]; then
+    if [ -n "${BUILDFILES}" ]; then
+	echo "Directory ${BUILDDIR} should be empty"
+	exit 1
+    fi
+else
+    mkdir "${BUILDDIR}"
+fi
 
 function setup {
-    libtoolize
+    libtoolize || glibtoolize
     automake --add-missing
     aclocal -I m4
     autoheader
     automake
-    autoheader
     autoconf
 }
 
@@ -128,6 +135,16 @@ function buildit {
     local CPPFLAGS="-I${SRCDIR}/build/lib-${LIBBM}/include"
     local LDFLAGS="${march} -L${SRCDIR}/build/lib-${LIBBM}/lib"
 
+    local EXEC_PREAMBLE=""
+    local EXEC_SUFFIX=""
+
+    case ${host} in
+	*mingw*)
+	    EXEC_PREAMBLE="wine"
+	    EXEC_SUFFIX=".exe"
+	    ;;
+    esac
+    
     mkdir -p ${D}
 
     echo "	... ${BMD}"
@@ -146,11 +163,11 @@ clean-${BMD}:
 
 .PHONY: regtest-${BMD}
 regtest-${BMD}:
-	(cd ${D} && ./xdelta3regtest 1> \${TMP}/regtest.${BMD}.stdout 2> \${TMP}/regtest.${BMD}.stderr)
+	(cd ${D} && ${EXEC_PREAMBLE} ./bin/xdelta3regtest${EXEC_SUFFIX} 1> \${TMP}/regtest.${BMD}.stdout 2> \${TMP}/regtest.${BMD}.stderr)
 
 .PHONY: selftest-${BMD}
 selftest-${BMD}:
-	(cd ${D} && ./bin/xdelta3 test 1> \${TMP}/selftest.${BMD}.stdout 2> \${TMP}/selftest.${BMD}.stderr)
+	(cd ${D} && ${EXEC_PREAMBLE} ./bin/xdelta3${EXEC_SUFFIX} test 1> \${TMP}/selftest.${BMD}.stdout 2> \${TMP}/selftest.${BMD}.stderr)
 
 
 EOF

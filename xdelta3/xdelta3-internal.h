@@ -1,20 +1,18 @@
 /* xdelta3 - delta compression tools and library
- * Copyright (C) 2011, 2012, 2013, 2014, 2015 Joshua P. MacDonald
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+   Copyright 2016 Joshua MacDonald
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 #ifndef XDELTA3_INTERNAL_H__
 #define XDELTA3_INTERNAL_H__
 
@@ -382,13 +380,13 @@ usize_t xd3_checksum_hash (const xd3_hash_cfg *cfg, const usize_t cksum);
 
 #if USE_UINT32
 uint32_t xd3_large32_cksum (xd3_hash_cfg *cfg, const uint8_t *base, const usize_t look);
-uint32_t xd3_large32_cksum_update (xd3_hash_cfg *cfg, uint32_t cksum, 
+uint32_t xd3_large32_cksum_update (xd3_hash_cfg *cfg, const uint32_t cksum,
 				   const uint8_t *base, const usize_t look);
 #endif /* USE_UINT32 */
 
 #if USE_UINT64
 uint64_t xd3_large64_cksum (xd3_hash_cfg *cfg, const uint8_t *base, const usize_t look);
-uint64_t xd3_large64_cksum_update (xd3_hash_cfg *cfg, uint64_t cksum, 
+uint64_t xd3_large64_cksum_update (xd3_hash_cfg *cfg, const uint64_t cksum,
 				   const uint8_t *base, const usize_t look);
 #endif /* USE_UINT64 */
 

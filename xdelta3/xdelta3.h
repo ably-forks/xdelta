@@ -1,20 +1,18 @@
-/* xdelta 3 - delta compression tools and library
- * Copyright (C) Joshua P. MacDonald
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+/* xdelta3 - delta compression tools and library
+   Copyright 2016 Joshua MacDonald
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 
 /* To learn more about Xdelta, start by reading xdelta3.c.  If you are
  * ready to use the API, continue reading here.  There are two
@@ -117,7 +115,9 @@
 #include <inttypes.h>
 #include <stdint.h>
 #else /* WIN32 case */
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 
 #ifndef WINVER
 #if XD3_USE_LARGEFILE64
@@ -136,6 +136,7 @@
 /* _MSV_VER is defined by Microsoft tools, not by Mingw32 */
 #ifdef _MSC_VER
 typedef signed int     ssize_t;
+typedef int pid_t;
 #if _MSC_VER < 1600
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
@@ -144,6 +145,7 @@ typedef ULONGLONG      uint64_t;
 #else /* _MSC_VER >= 1600 */
 /* For MSVC10 and above */
 #include <stdint.h>
+#define inline __inline
 #endif /* _MSC_VER < 1600 */
 #else /* _MSC_VER not defined  */
 /* Mingw32 */
@@ -165,11 +167,12 @@ typedef ULONGLONG      uint64_t;
 #define _FILE_OFFSET_BITS 64
 #endif
 
+static_assert(SIZEOF_SIZE_T == sizeof(size_t), "SIZEOF_SIZE_T not correctly set");
+static_assert(SIZEOF_UNSIGNED_LONG_LONG == sizeof(unsigned long long), "SIZEOF_UNSIGNED_LONG_LONG not correctly set");
+
 /* Set a xoff_t typedef and the "Q" printf insert. */
 #if defined(_WIN32)
 typedef uint64_t xoff_t;
-/* Note: The following generates benign warnings in a mingw
- * cross-compiler */
 #define Q "I64"
 #elif SIZEOF_UNSIGNED_LONG == 8
 typedef unsigned long xoff_t;
@@ -204,8 +207,6 @@ typedef uint32_t xoff_t;
 /* Set a usize_ttypedef and the "W" printf insert. */
 #if defined(_WIN32)
 typedef uint64_t usize_t;
-/* Note: The following generates benign warnings in a mingw
- * cross-compiler */
 #define W "I64"
 #elif SIZEOF_UNSIGNED_LONG == 8
 typedef unsigned long usize_t;
@@ -384,7 +385,11 @@ typedef struct {
 } shortbuf;
 
 #ifndef PRINTF_ATTRIBUTE
+#ifdef __GNUC__
 #define PRINTF_ATTRIBUTE(x,y) __attribute__ ((__format__ (__printf__, x, y)))
+#else
+#define PRINTF_ATTRIBUTE(x,y)
+#endif
 #endif
 
 /* Underlying xprintf() */
@@ -1107,8 +1112,8 @@ struct _xd3_stream
  **************************************************************************/
 
 #ifdef __cplusplus
-  extern "C" {
-#endif
+extern "C" {
+#endif // __cplusplus
 
 /* This function configures an xd3_stream using the provided in-memory
  * input buffer, source buffer, output buffer, and flags.  The output
